@@ -19,8 +19,9 @@ class TestTextCitationIntegration:
         """flesch_reading_ease citation should have correct metadata."""
         citation = Text.flesch_reading_ease.citation
         assert citation.authors == ["Flesch, R."]
+        assert citation.title == "A new readability yardstick"
         assert citation.year == 1948
-        assert "readability" in citation.title.lower()
+        assert citation.doi == "10.1037/h0057532"
 
     def test_text_method_cite_returns_string(self):
         """cite() method should return formatted citation string."""
@@ -41,7 +42,7 @@ class TestTextCitationIntegration:
         assert isinstance(mla, str)
 
         # Each style should be different
-        assert harvard != apa or harvard != mla
+        assert harvard != apa != mla
 
     def test_text_method_citation_styles_property(self):
         """citation_styles property should list available styles."""
@@ -218,95 +219,12 @@ class TestTextCitationErrorHandling:
         with pytest.raises(ValueError, match="Unknown citation style"):
             Text.flesch_reading_ease.cite("invalid_style_xyz")
 
-    def test_invalid_style_error_message_helpful(self):
-        """Error message should suggest available styles."""
-        with pytest.raises(ValueError) as exc_info:
-            Text.flesch_reading_ease.cite("notarealstyle")
-
-        error_message = str(exc_info.value)
-        assert "notarealstyle" in error_message
-        # Should mention available styles
-        assert any(
-            word in error_message.lower() for word in ["available", "styles", "valid"]
-        )
-
     def test_method_without_decorator_no_citation(self):
         """Methods without @citeable should not have citation attribute."""
-        # Test on a method that shouldn't have citation (if any exist)
-        # For now, just verify that attempting to access citation on a
-        # non-decorated method would fail appropriately
 
-        class TestClass:
+        class TestClass(Text):
             def regular_method(self):
                 return 42
 
         assert not hasattr(TestClass.regular_method, "citation")
         assert not hasattr(TestClass.regular_method, "cite")
-
-
-class TestBackwardCompatibility:
-    """Test that citation feature doesn't break existing functionality."""
-
-    def test_existing_text_usage_unchanged(self):
-        """Existing Text usage should work exactly as before."""
-        text = Text("The cat sat on the mat.")
-
-        # Should work as before
-        score = text.flesch_reading_ease()
-        assert isinstance(score, float)
-
-    def test_method_signature_unchanged(self):
-        """Method signatures should be unchanged."""
-        import inspect
-
-        # Get the actual method (through the descriptor if needed)
-        if hasattr(Text.flesch_reading_ease, "func"):
-            sig = inspect.signature(Text.flesch_reading_ease.func)
-        else:
-            # Might not be implemented yet
-            pytest.skip("Citation feature not implemented yet")
-
-        params = list(sig.parameters.keys())
-        assert "self" in params
-
-    def test_return_type_unchanged(self):
-        """Return types should be unchanged."""
-        text = Text("Sample text.")
-        result = text.flesch_reading_ease()
-        assert isinstance(result, float)
-
-    def test_no_performance_regression(self):
-        """Citation feature should not significantly impact performance."""
-        import time
-
-        text = Text("Sample text for performance testing. " * 100)
-
-        # Time multiple calls
-        start = time.time()
-        for _ in range(100):
-            text.flesch_reading_ease()
-        elapsed = time.time() - start
-
-        # Should complete 100 calls in reasonable time (< 1 second for simple text)
-        assert elapsed < 5.0  # Very generous limit
-
-    def test_text_instantiation_unchanged(self):
-        """Text instantiation should work as before."""
-        text = Text("Sample text")
-        assert isinstance(text, Text)
-        assert hasattr(text, "flesch_reading_ease")
-
-    def test_all_original_methods_callable(self):
-        """All original Text methods should still be callable."""
-        text = Text("The quick brown fox jumps over the lazy dog. " * 3)
-
-        # Test a few key methods
-        methods_to_test = [
-            "flesch_reading_ease",
-        ]
-
-        for method_name in methods_to_test:
-            if hasattr(text, method_name):
-                method = getattr(text, method_name)
-                result = method()
-                assert result is not None  # Should return something

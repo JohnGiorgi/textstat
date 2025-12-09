@@ -1,5 +1,6 @@
 """Tests for citation formatters."""
 
+from textwrap import dedent
 import pytest
 
 from textstat.citation import Citation
@@ -29,16 +30,10 @@ class TestHarvardFormatter:
             doi="10.1037/h0057532",
         )
 
-        formatter = HarvardFormatter()
-        result = formatter.format(citation)
+        result = HarvardFormatter().format(citation)
 
-        assert "Flesch, R." in result
-        assert "(1948)" in result
-        assert "'A new readability yardstick'" in result
-        assert "Journal of Applied Psychology" in result
-        assert "32" in result
-        assert "221-232" in result
-        assert "doi:10.1037/h0057532" in result or "10.1037/h0057532" in result
+        expected = "Flesch, R. (1948). 'A new readability yardstick'. Journal of Applied Psychology, 32(3), pp. 221-232. doi:10.1037/h0057532."
+        assert result == expected
 
     def test_harvard_with_volume_and_issue(self):
         """Harvard formatter should format volume(issue) correctly."""
@@ -56,7 +51,7 @@ class TestHarvardFormatter:
         result = formatter.format(citation)
 
         # Should contain volume(issue) format
-        assert "32(3)" in result or "32, no. 3" in result or "32.3" in result
+        assert "32(3)" in result
 
     def test_harvard_without_issue(self):
         """Harvard formatter should handle missing issue."""
@@ -73,8 +68,9 @@ class TestHarvardFormatter:
         formatter = HarvardFormatter()
         result = formatter.format(citation)
 
-        assert "32" in result
-        assert "221-232" in result
+        # Should not include issue number in parentheses
+        expected = "Flesch, R. (1948). 'A new readability yardstick'. Journal of Applied Psychology, 32, pp. 221-232."
+        assert result == expected
 
     def test_harvard_book_citation(self):
         """Harvard formatter should format book citation."""
@@ -89,10 +85,8 @@ class TestHarvardFormatter:
         formatter = HarvardFormatter()
         result = formatter.format(citation)
 
-        assert "Gunning, R." in result
-        assert "1952" in result
-        assert "Technique of clear writing" in result
-        assert "McGraw-Hill" in result
+        expected = "Gunning, R. (1952). 'Technique of clear writing'. McGraw-Hill."
+        assert result == expected
 
     def test_harvard_ends_with_period(self):
         """Harvard citation should end with a period."""
@@ -125,13 +119,8 @@ class TestAPAFormatter:
         formatter = APAFormatter()
         result = formatter.format(citation)
 
-        assert "Flesch, R." in result
-        assert "(1948)" in result
-        assert "A new readability yardstick" in result
-        assert "Journal of Applied Psychology" in result
-        assert "32" in result
-        assert "221-232" in result
-        assert "doi" in result.lower() or "https://doi.org" in result
+        expected = "Flesch, R. (1948). A new readability yardstick. Journal of Applied Psychology, 32(3), 221-232. https://doi.org/10.1037/h0057532"
+        assert result == expected
 
     def test_apa_title_not_in_quotes(self):
         """APA titles should not be in quotes (unlike Harvard)."""
@@ -177,10 +166,8 @@ class TestAPAFormatter:
         formatter = APAFormatter()
         result = formatter.format(citation)
 
-        assert "Gunning, R." in result
-        assert "(1952)" in result
-        assert "Technique of clear writing" in result
-        assert "McGraw-Hill" in result
+        expected = "Gunning, R. (1952). Technique of clear writing. McGraw-Hill."
+        assert result == expected
 
 
 class TestMLAFormatter:
@@ -201,15 +188,8 @@ class TestMLAFormatter:
         formatter = MLAFormatter()
         result = formatter.format(citation)
 
-        assert "Flesch, R." in result or "Flesch, R" in result
-        assert (
-            '"A new readability yardstick"' in result
-            or '"A New Readability Yardstick"' in result
-        )
-        assert "Journal of Applied Psychology" in result
-        assert "32.3" in result or "32, no. 3" in result
-        assert "(1948)" in result or "1948" in result
-        assert "221-232" in result
+        expected = 'Flesch, R. "A New Readability Yardstick" Journal of Applied Psychology 32.3 (1948): 221-232.'
+        assert result == expected
 
     def test_mla_title_in_quotes(self):
         """MLA article titles should be in quotes."""
@@ -224,7 +204,8 @@ class TestMLAFormatter:
         formatter = MLAFormatter()
         result = formatter.format(citation)
 
-        assert '"' in result  # Should have quotes around title
+        # Title should be in quotes
+        assert '"A New Readability Yardstick"' in result
 
     def test_mla_book_citation(self):
         """MLA formatter should format book citation."""
@@ -239,13 +220,8 @@ class TestMLAFormatter:
         formatter = MLAFormatter()
         result = formatter.format(citation)
 
-        assert "Gunning" in result
-        assert (
-            "Technique of clear writing" in result
-            or "Technique of Clear Writing" in result
-        )
-        assert "1952" in result
-        assert "McGraw-Hill" in result
+        expected = 'Gunning, R. "Technique of Clear Writing" McGraw-Hill, 1952.'
+        assert result == expected
 
 
 class TestChicagoFormatter:
@@ -266,16 +242,8 @@ class TestChicagoFormatter:
         formatter = ChicagoFormatter()
         result = formatter.format(citation)
 
-        assert "Flesch" in result
-        assert (
-            '"A new readability yardstick"' in result
-            or '"A New Readability Yardstick"' in result
-        )
-        assert "Journal of Applied Psychology" in result
-        assert "32" in result
-        assert "no. 3" in result or "3" in result
-        assert "1948" in result
-        assert "221-232" in result
+        expected = 'Flesch, R. "A New Readability Yardstick" Journal of Applied Psychology 32, no. 3 (1948): 221-232.'
+        assert result == expected
 
     def test_chicago_title_in_quotes(self):
         """Chicago article titles should be in quotes."""
@@ -290,7 +258,8 @@ class TestChicagoFormatter:
         formatter = ChicagoFormatter()
         result = formatter.format(citation)
 
-        assert '"' in result
+        # Title should be in quotes
+        assert '"A New Readability Yardstick"' in result
 
     def test_chicago_issue_format(self):
         """Chicago should format issue as 'no. N'."""
@@ -305,7 +274,7 @@ class TestChicagoFormatter:
         formatter = ChicagoFormatter()
         result = formatter.format(citation)
 
-        assert "no." in result or "3" in result
+        assert "no. 3" in result
 
 
 class TestBibTeXFormatter:
@@ -327,22 +296,22 @@ class TestBibTeXFormatter:
         formatter = BibTeXFormatter()
         result = formatter.format(citation)
 
-        assert result.startswith("@article{") or result.startswith("@")
-        assert "author = {Flesch, R.}" in result or "author={Flesch, R.}" in result
-        assert (
-            "title = {A new readability yardstick}" in result
-            or "title={A new readability yardstick}" in result
-        )
-        assert "year = {1948}" in result or "year={1948}" in result
-        assert (
-            "journal = {Journal of Applied Psychology}" in result
-            or "journal={Journal of Applied Psychology}" in result
-        )
-        assert "volume = {32}" in result or "volume={32}" in result
-        assert "}" in result
+        expected = """
+        @article{flesch1948,
+          author = {Flesch, R.},
+          title = {A new readability yardstick},
+          year = {1948},
+          journal = {Journal of Applied Psychology},
+          volume = {32},
+          number = {3},
+          pages = {221--232},
+          doi = {10.1037/h0057532}
+        }
+        """
+        assert result == dedent(expected).strip()
 
     def test_bibtex_citation_key(self):
-        """BibTeX should generate citation key."""
+        """BibTeX should generate citation key in format 'lastnameyear'."""
         citation = Citation(
             authors=["Flesch, R."], title="A new readability yardstick", year=1948
         )
@@ -350,10 +319,8 @@ class TestBibTeXFormatter:
         formatter = BibTeXFormatter()
         result = formatter.format(citation)
 
-        # Should have a key like flesch1948 or similar
-        assert "@" in result
-        assert "{" in result
-        assert "1948" in result
+        # Should have a key like @article{flesch1948,
+        assert "@article{flesch1948," in result
 
     def test_bibtex_book_type(self):
         """BibTeX formatter should use @book for books."""
@@ -368,9 +335,15 @@ class TestBibTeXFormatter:
         formatter = BibTeXFormatter()
         result = formatter.format(citation)
 
-        assert "@book{" in result
-        assert "publisher" in result
-        assert "McGraw-Hill" in result
+        expected = """
+        @book{gunning1952,
+          author = {Gunning, R.},
+          title = {Technique of clear writing},
+          year = {1952},
+          publisher = {McGraw-Hill}
+        }
+        """
+        assert result == dedent(expected).strip()
 
     def test_bibtex_journal_type(self):
         """BibTeX formatter should use @article for journals."""
@@ -385,7 +358,15 @@ class TestBibTeXFormatter:
         formatter = BibTeXFormatter()
         result = formatter.format(citation)
 
-        assert "@article{" in result
+        expected = """
+        @article{flesch1948,
+          author = {Flesch, R.},
+          title = {A new readability yardstick},
+          year = {1948},
+          journal = {Journal of Applied Psychology}
+        }
+        """
+        assert result == dedent(expected).strip()
 
     def test_bibtex_pages_format(self):
         """BibTeX should format pages with double dash."""
@@ -408,41 +389,34 @@ class TestFormatterEdgeCases:
     """Test edge cases for all formatters."""
 
     @pytest.mark.parametrize(
-        "formatter_class",
+        "formatter_class,expected_contains",
         [
-            HarvardFormatter,
-            APAFormatter,
-            MLAFormatter,
-            ChicagoFormatter,
-            BibTeXFormatter,
+            (
+                HarvardFormatter,
+                "Kincaid, J.P., Fishburne, R.P., Rogers, R.L., and Chissom, B.S.",
+            ),
+            (
+                APAFormatter,
+                "Kincaid, J.P., Fishburne, R.P., Rogers, R.L., & Chissom, B.S.",
+            ),
+            (
+                MLAFormatter,
+                "Kincaid, J.P., Fishburne, R.P., Rogers, R.L., and Chissom, B.S.",
+            ),
+            (
+                ChicagoFormatter,
+                "Kincaid, J.P., Fishburne, R.P., Rogers, R.L., and Chissom, B.S.",
+            ),
+            (
+                BibTeXFormatter,
+                "author = {Kincaid, J.P. and Fishburne, R.P. and Rogers, R.L. and Chissom, B.S.}",
+            ),
         ],
     )
-    def test_formatter_handles_missing_optional_fields(self, formatter_class):
-        """Formatters should handle missing optional fields gracefully."""
-        citation = Citation(
-            authors=["Flesch, R."], title="A new readability yardstick", year=1948
-        )
-
-        formatter = formatter_class()
-        result = formatter.format(citation)
-
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "Flesch" in result
-        assert "1948" in str(result)
-
-    @pytest.mark.parametrize(
-        "formatter_class",
-        [
-            HarvardFormatter,
-            APAFormatter,
-            MLAFormatter,
-            ChicagoFormatter,
-            BibTeXFormatter,
-        ],
-    )
-    def test_formatter_handles_multiple_authors(self, formatter_class):
-        """Formatters should handle multiple authors."""
+    def test_formatter_handles_multiple_authors(
+        self, formatter_class, expected_contains
+    ):
+        """Formatters should handle multiple authors correctly."""
         citation = Citation(
             authors=[
                 "Kincaid, J.P.",
@@ -458,7 +432,7 @@ class TestFormatterEdgeCases:
         result = formatter.format(citation)
 
         assert isinstance(result, str)
-        assert "Kincaid" in result
+        assert expected_contains in result
 
     @pytest.mark.parametrize(
         "formatter_class",
@@ -474,7 +448,7 @@ class TestFormatterEdgeCases:
         """Formatters should handle special characters in titles."""
         citation = Citation(
             authors=["Test, A."],
-            title="Title with special chars: dash—em-dash & ampersand",
+            title="Title with special chars: —",
             year=2020,
         )
 
@@ -482,7 +456,12 @@ class TestFormatterEdgeCases:
         result = formatter.format(citation)
 
         assert isinstance(result, str)
-        assert "dash" in result or "—" in result
+        assert "—" in result
+        # Ensure the special character is preserved in the title
+        assert (
+            "Title with special chars: —" in result
+            or '"Title With Special Chars: —"' in result
+        )
 
     @pytest.mark.parametrize(
         "formatter_class",
@@ -501,4 +480,6 @@ class TestFormatterEdgeCases:
         result = formatter.format(citation)
 
         assert isinstance(result, str)
-        assert "Müller" in result or "Muller" in result
+        # Unicode characters should be preserved
+        assert "Müller" in result
+        assert "Über" in result

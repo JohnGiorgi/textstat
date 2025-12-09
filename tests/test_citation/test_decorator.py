@@ -176,19 +176,6 @@ class TestCitableMethod:
         assert citation.source.pages == "221-232"
         assert citation.doi == "10.1037/h0057532"
 
-    def test_cite_method_exists(self):
-        """CitableMethod should have cite() method."""
-
-        class TestClass:
-            @citeable(
-                authors=["Flesch, R."], title="A new readability yardstick", year=1948
-            )
-            def test_method(self):
-                return 42
-
-        assert hasattr(TestClass.test_method, "cite")
-        assert callable(TestClass.test_method.cite)
-
     def test_cite_method_returns_string(self):
         """cite() method should return a string."""
 
@@ -210,18 +197,6 @@ class TestCitableMethod:
         citation_string = TestClass.test_method.cite("harvard")
         assert isinstance(citation_string, str)
         assert len(citation_string) > 0
-
-    def test_citation_styles_property_exists(self):
-        """CitableMethod should have citation_styles property."""
-
-        class TestClass:
-            @citeable(
-                authors=["Flesch, R."], title="A new readability yardstick", year=1948
-            )
-            def test_method(self):
-                return 42
-
-        assert hasattr(TestClass.test_method, "citation_styles")
 
     def test_citation_styles_returns_list(self):
         """citation_styles should return a list of style names."""

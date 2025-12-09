@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from .base import CitationFormatter
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from textstat.citation.metadata import Citation
 
 
@@ -26,7 +26,10 @@ class APAFormatter(CitationFormatter):
         parts = []
 
         # Author. (Year).
-        parts.append(f"{self.format_author(citation.authors)}. ({citation.year}).")
+        author_part = self.format_author(citation.authors)
+        if not author_part.endswith("."):
+            author_part += "."
+        parts.append(f"{author_part} ({citation.year}).")
 
         # Title.
         parts.append(f"{citation.title}.")
