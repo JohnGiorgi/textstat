@@ -134,6 +134,7 @@ def citeable(**metadata: Any) -> Callable[[Callable], CitableMethod]:
         TypeError: If required citation fields are missing.
 
     Example:
+        ```
         @citeable(
             authors=["Flesch, R."],
             title="A new readability yardstick",
@@ -150,8 +151,10 @@ def citeable(**metadata: Any) -> Callable[[Callable], CitableMethod]:
                 - (1.015 * self.avg("words", per="sentences"))
                 - (84.6 * self.avg("syllables", per="words"))
             )
+        ```
 
     Usage:
+        ```
         # Normal method call
         text = Text("Example text")
         score = text.flesch_reading_ease()  # Returns float
@@ -160,6 +163,7 @@ def citeable(**metadata: Any) -> Callable[[Callable], CitableMethod]:
         citation = Text.flesch_reading_ease.cite("harvard")  # Returns string
         metadata = Text.flesch_reading_ease.citation  # Returns Citation object
         styles = Text.flesch_reading_ease.citation_styles  # Returns list
+        ```
     """
 
     def decorator(target: Callable | property) -> CitableMethod:

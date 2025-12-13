@@ -1,4 +1,5 @@
 import warnings
+from importlib import resources
 from math import sqrt
 
 from textstat import core
@@ -37,10 +38,6 @@ class Text(mixins.Span, core.Text):
         """Calculate Flesch Reading Ease score.
 
         Returns a score from 0-100, where higher scores indicate easier readability.
-
-        Citation:
-            Flesch, R. (1948). A new readability yardstick.
-            Journal of Applied Psychology, 32(3), 221-232.
         """
         return (
             206.835
@@ -53,16 +50,12 @@ class Text(mixins.Span, core.Text):
         title="Derivation of new readability formulas for Navy enlisted personnel",
         year=1975,
         source=BookSource(publisher="Naval Technical Training Command"),
+        doi="10.21236/ADA006655",
     )
     def flesch_kincaid_grade(self) -> float:
         """Calculate Flesch-Kincaid Grade Level.
 
         Returns the US grade level required to understand the text.
-
-        Citation:
-            Kincaid, J.P., Fishburne, R.P., Rogers, R.L. and Chissom, B.S. (1975).
-            Derivation of new readability formulas for Navy enlisted personnel.
-            Naval Technical Training Command.
         """
         return (
             (0.39 * self.avg("words", per="sentences"))
@@ -86,7 +79,7 @@ class Text(mixins.Span, core.Text):
 
     @citeable(
         authors=["Mc Laughlin, G.H."],
-        title="SMOG grading-a new readability formula",
+        title="SMOG Grading-a New Readability Formula",
         year=1969,
         source=JournalSource(
             name="Journal of Reading", volume=12, issue=8, pages="639-646"
@@ -96,10 +89,6 @@ class Text(mixins.Span, core.Text):
         """Calculate SMOG (Simple Measure of Gobbledygook) grade level.
 
         Returns the years of education required to understand the text.
-
-        Citation:
-            Mc Laughlin, G.H. (1969). SMOG grading-a new readability formula.
-            Journal of Reading, 12(8), 639-646.
         """
         # TODO: Implement sampling
         if len(self.sentences) < 30:
@@ -118,15 +107,12 @@ class Text(mixins.Span, core.Text):
         source=JournalSource(
             name="Journal of Applied Psychology", volume=60, issue=2, pages="283-284"
         ),
+        doi="10.1037/h0076540",
     )
     def coleman_liau_index(self) -> float:
         """Calculate Coleman-Liau Index.
 
         Returns the US grade level required to understand the text.
-
-        Citation:
-            Coleman, M. and Liau, T.L. (1975). A computer readability formula
-            designed for machine scoring. Journal of Applied Psychology, 60(2), 283-284.
         """
         return (
             (0.0588 * (self.avg("letters", per="words") * 100))
@@ -144,10 +130,6 @@ class Text(mixins.Span, core.Text):
         """Calculate Automated Readability Index (ARI).
 
         Returns the US grade level required to understand the text.
-
-        Citation:
-            Senter, R.J. and Smith, E.A. (1967). Automated readability index.
-            Cincinnati University.
         """
         return (
             4.71 * self.avg("characters", per="words")
@@ -155,6 +137,15 @@ class Text(mixins.Span, core.Text):
             - 21.43
         )
 
+    @citeable(
+        authors=["Klare, George R."],
+        title="Assessing Readability",
+        year=1974,
+        source=JournalSource(
+            name="Reading Research Quarterly", volume=10, issue=1, pages="62-102"
+        ),
+        doi="10.2307/747086",
+    )
     def linsear_write_formula(self) -> float:
         """
         Klare, George R. "Assessing readability."
@@ -168,21 +159,28 @@ class Text(mixins.Span, core.Text):
 
         return result / 2 if result > 20 else (result / 2) - 1
 
+    @citeable(
+        authors=["Chall, Jeanne Sternlicht", "Dale, Edgar"],
+        title="Readability Revisited: The New Dale-Chall Readability Formula",
+        year=1995,
+        source=BookSource(publisher="Brookline Books", isbn="1571290087"),
+    )
     def dale_chall_readability_score(self) -> float:
-        """
-        Chall, Jeanne Sternlicht, and Edgar Dale.
-        "Readability revisited: The new Dale-Chall readability formula."
-        Brookline Books, 1995.
-        """
-        # TODO: Needs Dale-Chall 3000 word list
-        ...
+        """ """
+        _word_list = resources.read_text(
+            "textstat.en.resources", "dale_chall_3000.txt"
+        ).split(" ")
 
+    @citeable(
+        authors=["Dale, Edgar", "Chall, Jeanne Sternlicht"],
+        title="A Formula for Predicting Readability: Instructions",
+        year=1948,
+        source=JournalSource(
+            name="Educational Research Bulletin", volume=27, issue=2, pages="37-54"
+        ),
+    )
     def dale_chall_readability_score_original(self) -> float:
-        """
-        Dale, Edgar, and Jeanne S. Chall.
-        "A formula for predicting readability: Instructions."
-        Educational research bulletin (1948): 37-54.
-        """
+        """ """
         # TODO: Needs Dale-Chall 763 word list
         ...
 
@@ -196,9 +194,6 @@ class Text(mixins.Span, core.Text):
         """Calculate Gunning Fog Index.
 
         Returns the years of education required to understand the text.
-
-        Citation:
-            Gunning, R. (1952). Technique of clear writing. McGraw-Hill.
         """
         # TODO: Implement sampling
         return 0.4 * (
@@ -206,14 +201,26 @@ class Text(mixins.Span, core.Text):
             + (len(self.filter(Word.syllables >= 3)) / len(self.words)) * 100
         )
 
+    @citeable(
+        authors=["Björnsson, C. H."],
+        title="Läsbarhet",
+        year=1968,
+        source=BookSource(publisher="Liber"),
+    )
     def lix(self) -> float:
-        """
-        Björnsson, C. H. (1968). Läsbarhet. Stockholm: Liber.
-        """
+        """ """
         return (len(self.words) / len(self.sentences)) + (
             (len(self.filter(Word.length > 6)) / len(self.words)) * 100
         )
 
+    @citeable(
+        authors=["Anderson, Jonathan"],
+        title="Lix and rix: Variations on a little-known readability index",
+        year=1983,
+        source=JournalSource(
+            name="Journal of Reading", volume=26, issue=6, pages="490-496"
+        ),
+    )
     def rix(self) -> float:
         """
         Anderson, Jonathan.
@@ -222,6 +229,15 @@ class Text(mixins.Span, core.Text):
         """
         return len(self.filter(Word.length >= 7)) / len(self.sentences)
 
+    @citeable(
+        authors=["Spache, George"],
+        title="A New Readability Formula for Primary-Grade Reading Materials",
+        year=1953,
+        source=JournalSource(
+            name="The Elementary School Journal", volume=53, issue=7, pages="410-413"
+        ),
+        doi="10.1086/458513",
+    )
     def spache_readability(self) -> float:
         """
         Spache, George.

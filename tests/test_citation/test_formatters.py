@@ -1,6 +1,7 @@
 """Tests for citation formatters."""
 
 from textwrap import dedent
+
 import pytest
 
 from textstat.citation import Citation
